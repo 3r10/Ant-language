@@ -5,12 +5,18 @@
 </head>
 
 <body>
-<center>
-  <canvas id="world" width="1024" height="512"></canvas><br/>
+<div style="position: absolute; left: 0px; top: 0px;">
+  <canvas id="world" width="512" height="512"></canvas>
+</div>
+<div style="position: absolute; left: 512px; top: 0px; width: 512px;">
   <input type="file" id="fileinput" />
-  <input type="button" value="slow down!" onClick="interpreter.speedDown();"/>
-  <input type="button" value="speed up!" onClick="interpreter.speedUp();"/>
-</center>
+  <br/><br/>
+  <input type="button" value="Slow down!" onClick="interpreter.speedDown();"/>
+  <input type="button" value="Speed up!" onClick="interpreter.speedUp();"/>
+  <br/><br/>
+  <div id="assembly" style="white-space: pre; font-family: monospace;"></div>
+</div>
+
 </body>
 
 <script>
@@ -119,6 +125,7 @@ function Interpreter() {
   this.world = new World();
   this.ant = this.world.ant;
   this.speed = 0;
+  this.timeout;
   this.getValue = function(s) {
     value = toInt(s);
     if (isImmediate(s)) {
@@ -176,6 +183,20 @@ function Interpreter() {
     }
     this.registers[i_reg] = result? 1: 0;
   }
+  this.displayAssembly = function() {
+    assembly = "";
+    for (var i=0; i<this.slines.length; i++) {
+      line_number = (""+(i+1)).padEnd(5,' ');
+      line = line_number+this.slines[i];
+      if (i==this.pc) {
+        line = "<div style='background-color: black; color: white;'>"+line+"</div>";
+      } else {
+        line = "<div>"+line+"</div>";
+      }
+      assembly += line;
+    }
+    document.getElementById('assembly').innerHTML = assembly;
+  }
   this.step = function() {
     instruction = this.instructions[this.pc];
     if (instruction[0]=='stop') {
@@ -227,9 +248,10 @@ function Interpreter() {
         delay = 50*Math.pow(2,-this.speed);
         n = 1;
       }
-      setTimeout(function(){ this.steps(n); }.bind(this), delay);
+      this.timeout = setTimeout(function(){ this.steps(n); }.bind(this), delay);
     }
     this.world.draw();
+    this.displayAssembly();
   }
   this.speedUp = function() {
     this.speed++;
@@ -238,14 +260,16 @@ function Interpreter() {
     this.speed--;
   }
   this.start = function() {
+    clearTimeout(this.timeout);
     this.world.init();
     this.ant.init();
     this.registers = {};
     this.pc = 0;
-    this.steps(100);
+    this.steps(0);
   }
   this.read = function(assembly) {
     this.instructions = [];
+    this.slines = [];
     this.labels = {};
     lines = assembly.split('\n');
     for (var i = 0; i<lines.length; i++) {
@@ -273,7 +297,7 @@ function Interpreter() {
             break;
         }
         this.instructions.push(instruction);
-
+        this.slines.push(lines[i]);
       }
     }
   }
@@ -286,14 +310,8 @@ function readSingleFile(evt) {
   if (f) {
     var r = new FileReader();
     r.onload = function(e) {
-      var contents = e.target.result;
-      // alert( "Got the file.\n"
-      //       +"name: " + f.name + "\n"
-      //       +"type: " + f.type + "\n"
-      //       +"size: " + f.size + " bytes\n"
-      //       + "starts with: " + contents.substr(1, contents.indexOf("\n"))
-      // );
-      interpreter.read(contents);
+      var assembly = e.target.result;
+      interpreter.read(assembly);
       interpreter.start();
     }
     r.readAsText(f);
@@ -301,7 +319,6 @@ function readSingleFile(evt) {
     alert("Failed to load file");
   }
 }
-
 
 var interpreter = new Interpreter();
 document.getElementById('fileinput').addEventListener('change', readSingleFile, false);
