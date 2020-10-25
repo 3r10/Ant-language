@@ -38,6 +38,10 @@ The destination file contains :
 
 *todo*
 
-## Custom assembly instruction
+See `ant` files in the `samples` directory.
+
+## Custom assembly instruction set
 
 *todo*
+
+See generated custom assembly code.
