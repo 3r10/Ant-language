@@ -1,6 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
+<title>Ant Virtual Machine</title>
+<link rel="icon" href="data:image/ico;base64,
+AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAD///8AAAD//////wD///8A////AP///wD///8AAAD//wAA//////8A////AP///wD///8A
+////AAAA//////8A////AP///wAAAP//////AP///wD///8AAAD//wAA//8AAP//AAD//////wD/
+//8A////AAAA//////8A////AP///wD///8A////AAAA//////8A////AAAA//8AAP//AAD//wAA
+//////8A////AAAA//////8A////AP///wD///8A////AP///wD///8AAAD//////wAAAP//AAD/
+/wAA//8AAP//////AAAA//////8A////AP///wD///8A////AP///wD///8A////AAAA//////8A
+AAD//wAA//8AAP//AAD//////wAAAP//////AP///wD///8A////AP///wD///8A////AP///wAA
+AP//////AP///wAAAP//AAD//////wD///8AAAD//////wD///8A////AP///wAAAP//AAD//wAA
+//////8A////AAAA//8AAP//////AP///wAAAP//AAD//////wD///8AAAD//wAA//8AAP//////
+AP///wD///8AAAD//////wD///8A////AAAA//8AAP//////AP///wD///8AAAD//////wD///8A
+////AP///wD///8A////AP///wAAAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//////wD/
+//8A////AP///wD///8A////AP///wD///8A////AP///wD///8AAAD//wAA//////8A////AP//
+/wD///8A////AP///wD///8A////AP///wD///8A////AP///wAAAP//AAD//////wD///8AAAD/
+/wAA//////8A////AP///wD///8A////AP///wD///8A////AP///wAAAP//////AP///wAAAP//
+AAD//////wD///8AAAD//////wD///8A////AP///wD///8A////AP///wAAAP//////AP///wAA
+AP//AAD//wAA//8AAP//////AP///wAAAP//////AP///wD///8A////AP///wAAAP//////AP//
+/wD///8AAAD//wAA//8AAP//AAD//////wD///8A////AAAA//////8A////AP///wD///8A////
+AP///wD///8AAAD//////wAAAP//AAD//////wAAAP//////AP///wD///8A////AP///wD///8A
+////AP///wD///8AAAD//////wD///8A////AP///wD///8A////AAAA//////8A////AP///wD/
+//8Avn0AANw7AADsNwAA9C8AAPQvAAD2bwAAGZgAAO53AADwDwAA/n8AAPmfAAD2bwAA7DcAANw7
+AAD6XwAA9+8AAA=="/>
 <meta charset="UTF-8"/>
 </head>
 
@@ -9,10 +32,13 @@
   <canvas id="world" width="512" height="512"></canvas>
 </div>
 <div style="position: absolute; left: 512px; top: 0px; width: 512px;">
+  <input type="button" value="Zoom out!" onClick="interpreter.zoomChange(-1);"/>
+  <input type="button" value="Zoom in!" onClick="interpreter.zoomChange(1);"/>
+  <br/><br/>
   <input type="file" id="fileinput" />
   <br/><br/>
-  <input type="button" value="Slow down!" onClick="interpreter.speedDown();"/>
-  <input type="button" value="Speed up!" onClick="interpreter.speedUp();"/>
+  <input type="button" value="Slow down!" onClick="interpreter.speedChange(-1);"/>
+  <input type="button" value="Speed up!" onClick="interpreter.speedChange(1);"/>
   <br/><br/>
   <div id="assembly" style="white-space: pre; font-family: monospace;"></div>
 </div>
@@ -35,6 +61,7 @@ function Ant(world) {
     this.y = div(world.height,2);
     this.vx = 1;
     this.vy = 0;
+    this.angle = 0;
   }
   this.init();
   this.move = function(n) {
@@ -48,30 +75,46 @@ function Ant(world) {
       this.vy = this.vx;
       this.vx = vx2;
     }
+    this.angle = mod(this.angle+n,4);
   }
 }
 
 function World() {
 	this.canvas = document.getElementById('world');
 	this.ctx = this.canvas.getContext('2d');
+  this.ctx.webkitImageSmoothingEnabled = false;
+  this.ctx.imageSmoothingEnabled = false;
   //
-  this.scale = 8;
-  this.width = Math.floor(this.canvas.width/this.scale);
-  this.height = Math.floor(this.canvas.height/this.scale);
+  this.isAvailableImg=false;
+  this.img = new Image();
+  this.img.src = `data:image/ico;base64,
+  iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBI
+  WXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5AoZDCkJEiAtqwAAAH5JREFUOMulk1EOwCAIQ2mz+1+5
+  +9qCWJjJ+qWBPhERkmIRoJAQTibGLUlCAHoNeW3AXOgO4swpxtbUqcDYlp9PfNbmGtiamEvMxgod
+  AR3IpdhnnFRg1/jOroKSA0XINutk315hMn5OouvF0BfGT/H4IzXTymNzA2FrdqNsIDcm03YOq+Y/
+  bAAAAABJRU5ErkJggg==`;
+  //
+  this.zoom = 4;
+  this.setScale = function() {
+    this.scale = Math.pow(2,this.zoom);
+    this.width = Math.floor(this.canvas.width/this.scale);
+    this.height = Math.floor(this.canvas.height/this.scale);
+    this.data = new Array(this.width);
+    for (x=0; x<this.width; x++) {
+      this.data[x] = new Array(this.height);
+    }
+    this.init = function() {
+      for (x=0; x<this.width; x++) {
+        for (y=0; y<this.height; y++) {
+          this.data[x][y] = 0;
+        }
+      }
+      this.ant.init();
+    }
+  }
+  this.setScale();
   //
   this.ant = new Ant(this);
-  this.data = new Array(this.width);
-  for (x=0; x<this.width; x++) {
-    this.data[x] = new Array(this.height);
-  }
-  this.init = function() {
-    for (x=0; x<this.width; x++) {
-      for (y=0; y<this.height; y++) {
-        this.data[x][y] = 0;
-      }
-    }
-    this.ant.init();
-  }
   this.init();
   //
   this.draw = function() {
@@ -85,20 +128,15 @@ function World() {
         }
       }
     }
-    this.ctx.fillStyle = "#ff0000";
-    this.ctx.beginPath();
+    this.ctx.save();
     cx = (this.ant.x+0.5)*this.scale;
     cy = (this.height-0.5-this.ant.y)*this.scale;
-    dx1 = this.ant.vx*this.scale/2;
-    dy1 = this.ant.vy*this.scale/2;
-    this.ctx.moveTo(cx+dx1,cy-dy1);
-    dx2 = -dx1-dy1;
-    dy2 = dx1-dy1;
-    this.ctx.lineTo(cx+dx2,cy-dy2);
-    dx3 = -dy2;
-    dy3 = dx2;
-    this.ctx.lineTo(cx+dx3,cy-dy3);
-		this.ctx.fill();
+    this.ctx.translate(cx,cy);
+    this.ctx.rotate((1-this.ant.angle)*Math.PI/2);
+    this.ctx.scale(this.scale/16,this.scale/16);
+    this.ctx.translate(-8,-8);
+    this.ctx.drawImage(this.img,0,0);
+    this.ctx.restore();
 	}
   this.pick = function(x,y) {
     return this.data[x][y];
@@ -106,6 +144,10 @@ function World() {
   this.paint = function(x,y,value) {
     this.data[x][y] = value;
     this.draw()
+  }
+  this.zoomChange = function(delta) {
+    this.zoom = Math.max(0,this.zoom+delta);
+    this.setScale();
   }
 }
 
@@ -253,11 +295,12 @@ function Interpreter() {
     this.world.draw();
     this.displayAssembly();
   }
-  this.speedUp = function() {
-    this.speed++;
+  this.speedChange = function(delta) {
+    this.speed += delta;
   }
-  this.speedDown = function() {
-    this.speed--;
+  this.zoomChange = function(delta) {
+    this.world.zoomChange(delta);
+    this.start();
   }
   this.start = function() {
     clearTimeout(this.timeout);
