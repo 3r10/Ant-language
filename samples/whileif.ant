@@ -1,0 +1,13 @@
+a := 0
+b := 1
+i := 0
+while i<100 do
+  if a+b==2 then
+    b := b+1
+  else
+    c := a+b
+    a := b
+    b := c
+    i := i+1
+  end
+end

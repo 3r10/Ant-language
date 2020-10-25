@@ -1,0 +1,29 @@
+left := 1
+right := -1
+back := 2
+state := 0
+while 1==1 do
+  pick @ color
+  if state==0 then
+    if color==0 then
+      paint @ 1
+      turn @ left
+      state := 0
+    else
+      paint @ 1
+      turn @ right
+      state := 1
+    end
+  else
+    if color==0 then
+      paint @ 0
+      turn @ right
+      state := 0
+    else
+      paint @ 0
+      turn @ left
+      state := 1
+    end
+  end
+  move @ 1
+end

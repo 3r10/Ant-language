@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+</head>
+
+<body>
+<center>
+  <canvas id="world" width="1024" height="512"></canvas><br/>
+  <input type="file" id="fileinput" />
+  <input type="button" value="slow down!" onClick="interpreter.speedDown();"/>
+  <input type="button" value="speed up!" onClick="interpreter.speedUp();"/>
+</center>
+</body>
+
+<script>
+function div(a,b) {
+  return Math.floor(a/b);
+}
+function mod(a,b) {
+  return ((a%b)+b)%b;
+}
+
+
+function Ant(world) {
+  this.world = world;
+  this.init = function() {
+    this.x = div(world.width,2);
+    this.y = div(world.height,2);
+    this.vx = 1;
+    this.vy = 0;
+  }
+  this.init();
+  this.move = function(n) {
+    this.x = mod(this.x+n*this.vx,this.world.width);
+    this.y = mod(this.y+n*this.vy,this.world.height);
+  }
+  this.turn = function(n) {
+    n = mod(n,4);
+    for (i=0; i<n; i++) {
+      vx2 = -this.vy;
+      this.vy = this.vx;
+      this.vx = vx2;
+    }
+  }
+}
+
+function World() {
+	this.canvas = document.getElementById('world');
+	this.ctx = this.canvas.getContext('2d');
+  //
+  this.scale = 8;
+  this.width = Math.floor(this.canvas.width/this.scale);
+  this.height = Math.floor(this.canvas.height/this.scale);
+  //
+  this.ant = new Ant(this);
+  this.data = new Array(this.width);
+  for (x=0; x<this.width; x++) {
+    this.data[x] = new Array(this.height);
+  }
+  this.init = function() {
+    for (x=0; x<this.width; x++) {
+      for (y=0; y<this.height; y++) {
+        this.data[x][y] = 0;
+      }
+    }
+    this.ant.init();
+  }
+  this.init();
+  //
+  this.draw = function() {
+    this.ctx.fillStyle = "#ffffff";
+    this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
+    this.ctx.fillStyle = "#000000";
+    for (x=0; x<this.width; x++) {
+      for (y=0; y<this.height; y++) {
+        if (this.data[x][y]==1) {
+          this.ctx.fillRect(x*this.scale,(this.height-1-y)*this.scale,this.scale,this.scale);
+        }
+      }
+    }
+    this.ctx.fillStyle = "#ff0000";
+    this.ctx.beginPath();
+    cx = (this.ant.x+0.5)*this.scale;
+    cy = (this.height-0.5-this.ant.y)*this.scale;
+    dx1 = this.ant.vx*this.scale/2;
+    dy1 = this.ant.vy*this.scale/2;
+    this.ctx.moveTo(cx+dx1,cy-dy1);
+    dx2 = -dx1-dy1;
+    dy2 = dx1-dy1;
+    this.ctx.lineTo(cx+dx2,cy-dy2);
+    dx3 = -dy2;
+    dy3 = dx2;
+    this.ctx.lineTo(cx+dx3,cy-dy3);
+		this.ctx.fill();
+	}
+  this.pick = function(x,y) {
+    return this.data[x][y];
+  }
+  this.paint = function(x,y,value) {
+    this.data[x][y] = value;
+    this.draw()
+  }
+}
+
+function isRegister(s) {
+  return (s[0]=='r');
+}
+
+function isImmediate(s) {
+  return (s[0]=='#');
+}
+
+function toInt(s) {
+  return parseInt(s.substring(1));
+}
+
+function Interpreter() {
+  this.world = new World();
+  this.ant = this.world.ant;
+  this.speed = 0;
+  this.getValue = function(s) {
+    value = toInt(s);
+    if (isImmediate(s)) {
+      return value;
+    }
+    return this.registers[value];
+  }
+  this.call = function(f,v) {
+    switch (f) {
+      case 'random':
+        i_reg = toInt(v);
+        this.registers[i_reg] = Math.floor(Math.random()*2);
+        break;
+      case 'pick':
+        i_reg = toInt(v);
+        this.registers[i_reg] = this.world.pick(this.ant.x,this.ant.y);
+        break;
+      case 'paint':
+        value = this.getValue(v);
+        this.world.paint(this.ant.x,this.ant.y,value);
+        break;
+      case 'move':
+        value = this.getValue(v);
+        this.ant.move(value);
+        break;
+      case 'turn':
+        value = this.getValue(v);
+        this.ant.turn(value);
+        break;
+    }
+  }
+  this.test = function(instruction) {
+    i_reg = toInt(instruction[1]);
+    value1 = this.getValue(instruction[2]);
+    value2 = this.getValue(instruction[3]);
+    switch (instruction[0]) {
+      case 'test_eq':
+        result = (value1==value2);
+        break;
+      case 'test_eq':
+        result = (value1!=value2);
+        break;
+      case 'test_ge':
+        result = (value1>=value2);
+        break;
+      case 'test_gt':
+        result = (value1>value2);
+        break;
+      case 'test_le':
+        result = (value1<=value2);
+        break;
+      case 'test_lt':
+        result = (value1<value2);
+        break;
+    }
+    this.registers[i_reg] = result? 1: 0;
+  }
+  this.step = function() {
+    instruction = this.instructions[this.pc];
+    if (instruction[0]=='stop') {
+      return false;
+    }
+    this.pc++;
+    switch (instruction[0]) {
+      case 'label':
+        break;
+      case 'call':
+        this.call(instruction[1],instruction[2]);
+        break;
+      case 'set':
+        i_reg = toInt(instruction[1]);
+        this.registers[i_reg] = this.getValue(instruction[2]);
+        break;
+      case 'add':
+        i_reg = toInt(instruction[1]);
+        this.registers[i_reg] = this.getValue(instruction[2])+this.getValue(instruction[3]);
+        break;
+      case 'sub':
+        i_reg = toInt(instruction[1]);
+        this.registers[i_reg] = this.getValue(instruction[2])-this.getValue(instruction[3]);
+        break;
+      case 'test_eq':
+      case 'test_ne':
+      case 'test_ge':
+      case 'test_gt':
+      case 'test_le':
+      case 'test_lt':
+        this.test(instruction);
+        break;
+      case 'goto':
+        if (this.getValue(instruction[2])==0) {
+          label = instruction[1];
+          this.pc = this.labels[label];
+        }
+        break;
+    }
+    return true;
+  }
+  this.steps = function(n) {
+    for (var i=0; i<n-1 && this.step(); i++) {}
+    if (this.step()) {
+      if (this.speed>=0) {
+        delay = 50;
+        n = Math.pow(2,this.speed);
+      } else {
+        delay = 50*Math.pow(2,-this.speed);
+        n = 1;
+      }
+      setTimeout(function(){ this.steps(n); }.bind(this), delay);
+    }
+    this.world.draw();
+  }
+  this.speedUp = function() {
+    this.speed++;
+  }
+  this.speedDown = function() {
+    this.speed--;
+  }
+  this.start = function() {
+    this.world.init();
+    this.ant.init();
+    this.registers = {};
+    this.pc = 0;
+    this.steps(100);
+  }
+  this.read = function(assembly) {
+    this.instructions = [];
+    this.labels = {};
+    lines = assembly.split('\n');
+    for (var i = 0; i<lines.length; i++) {
+      // ignore ;...
+      line = lines[i]
+      i_comment = line.indexOf(';');
+      if (i_comment>=0) {
+        line = line.substring(0,i_comment);
+      }
+      instruction = line.split(' ');
+      var j=0;
+      while (j<instruction.length) {
+        if (instruction[j]=="") {
+          instruction.splice(j,1);
+        } else {
+          j++;
+        }
+      }
+      if (instruction.length>0) {
+        i_instruction = this.instructions.length;
+        switch (instruction[0]) {
+          case "label":
+            label = instruction[1];
+            this.labels[label] = i_instruction;
+            break;
+        }
+        this.instructions.push(instruction);
+
+      }
+    }
+  }
+}
+
+function readSingleFile(evt) {
+  // Retrieve the first (and only!) File from the FileList object
+  var f = evt.target.files[0];
+
+  if (f) {
+    var r = new FileReader();
+    r.onload = function(e) {
+      var contents = e.target.result;
+      // alert( "Got the file.\n"
+      //       +"name: " + f.name + "\n"
+      //       +"type: " + f.type + "\n"
+      //       +"size: " + f.size + " bytes\n"
+      //       + "starts with: " + contents.substr(1, contents.indexOf("\n"))
+      // );
+      interpreter.read(contents);
+      interpreter.start();
+    }
+    r.readAsText(f);
+  } else {
+    alert("Failed to load file");
+  }
+}
+
+
+var interpreter = new Interpreter();
+document.getElementById('fileinput').addEventListener('change', readSingleFile, false);
+</script>
+
+</html>
