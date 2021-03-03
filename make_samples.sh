@@ -1,6 +1,6 @@
 #!/bin/sh
 
-for file in ../samples/*.ant
+for file in ./samples/*.ant
 do
   echo $file
   output=`echo $file | rev | cut -c 5- | rev`.s
