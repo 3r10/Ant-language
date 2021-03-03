@@ -38,7 +38,8 @@ The destination file contains :
 
 ### Reference
 
-`<top>::= <statement_eol>* EOF
+```
+<top>::= <statement_eol>* EOF
 
 <statement_eol>::=
   | EOL
@@ -68,13 +69,15 @@ The destination file contains :
 
 <value>:
   | INT
-  | ID`
+  | ID
+```
 
 ### Examples
 
 **Langton's ant**
 
-`right := -1
+```
+right := -1
 left := 1
 for step in 1:1:30000 do
   pick @ color
@@ -86,7 +89,8 @@ for step in 1:1:30000 do
     paint @ 0
   end
   move @ 1
-end`
+end
+```
 
 **Other exemples**
 
