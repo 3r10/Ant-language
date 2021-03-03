@@ -27,3 +27,7 @@ setup.log
 
 # Local OPAM switch
 _opam/
+
+.vscode/
+.DS_Store
+**/.DS_Store
