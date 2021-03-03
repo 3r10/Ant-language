@@ -1,6 +1,6 @@
 right := -1
 left := 1
-for step in 1:1:1000 do
+for step in 1:1:30000 do
   pick @ color
   if color==0 then
     turn @ right

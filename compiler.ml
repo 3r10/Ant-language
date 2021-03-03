@@ -1,7 +1,13 @@
 open Ast
 
-(* Globals *)
+(* TODO : faire un fichier assembly.ml avec un AST 'quad list' *)
+
 let assembly = ref ""
+let write_assembly asm =
+  let a = !assembly in
+  assembly := a^asm
+
+(* Globals *)
 let freereg = ref 0
 let freelabel = ref 0
 let symbols: (string * int) list ref = ref []
@@ -15,10 +21,6 @@ let get_freelabel _ =
   let l = !freelabel in
   incr freelabel;
   l
-
-let write_assembly asm =
-  let a = !assembly in
-  assembly := a^asm
 
 let get_symbol id =
   if (List.mem_assoc id !symbols)

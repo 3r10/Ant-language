@@ -1,0 +1,708 @@
+   0  $accept : %entry% $end
+
+   1  main : statements_opt EOF
+
+   2  statements_opt :
+   3                 | EOL statements_opt
+   4                 | statements
+
+   5  statements : statement_eol
+   6             | statement_eol statements
+
+   7  statement_eol : statement EOL
+
+   8  statement : ID ASSIGN expr
+   9            | ID CALL value
+  10            | IF condition THEN EOL statements_opt END
+  11            | IF condition THEN EOL statements_opt ELSE EOL statements_opt END
+  12            | WHILE condition DO EOL statements_opt END
+  13            | FOR ID IN expr COLUMN expr COLUMN expr DO EOL statements_opt END
+
+  14  condition : expr EQ expr
+  15            | expr NE expr
+  16            | expr GE expr
+  17            | expr GT expr
+  18            | expr LE expr
+  19            | expr LT expr
+
+  20  expr : value
+  21       | MINUS value
+  22       | expr PLUS value
+  23       | expr MINUS value
+
+  24  value : INT
+  25        | ID
+
+  26  %entry% : '\001' main
+
+state 0
+	$accept : . %entry% $end  (0)
+
+	'\001'  shift 1
+	.  error
+
+	%entry%  goto 2
+
+
+state 1
+	%entry% : '\001' . main  (26)
+	statements_opt : .  (2)
+
+	IF  shift 3
+	WHILE  shift 4
+	FOR  shift 5
+	EOL  shift 6
+	ID  shift 7
+	EOF  reduce 2
+
+	main  goto 8
+	statements_opt  goto 9
+	statements  goto 10
+	statement_eol  goto 11
+	statement  goto 12
+
+
+state 2
+	$accept : %entry% . $end  (0)
+
+	$end  accept
+
+
+state 3
+	statement : IF . condition THEN EOL statements_opt END  (10)
+	statement : IF . condition THEN EOL statements_opt ELSE EOL statements_opt END  (11)
+
+	MINUS  shift 13
+	INT  shift 14
+	ID  shift 15
+	.  error
+
+	expr  goto 16
+	value  goto 17
+	condition  goto 18
+
+
+state 4
+	statement : WHILE . condition DO EOL statements_opt END  (12)
+
+	MINUS  shift 13
+	INT  shift 14
+	ID  shift 15
+	.  error
+
+	expr  goto 16
+	value  goto 17
+	condition  goto 19
+
+
+state 5
+	statement : FOR . ID IN expr COLUMN expr COLUMN expr DO EOL statements_opt END  (13)
+
+	ID  shift 20
+	.  error
+
+
+state 6
+	statements_opt : EOL . statements_opt  (3)
+	statements_opt : .  (2)
+
+	IF  shift 3
+	WHILE  shift 4
+	FOR  shift 5
+	EOL  shift 6
+	ID  shift 7
+	ELSE  reduce 2
+	END  reduce 2
+	EOF  reduce 2
+
+	statements_opt  goto 21
+	statements  goto 10
+	statement_eol  goto 11
+	statement  goto 12
+
+
+state 7
+	statement : ID . ASSIGN expr  (8)
+	statement : ID . CALL value  (9)
+
+	ASSIGN  shift 22
+	CALL  shift 23
+	.  error
+
+
+state 8
+	%entry% : '\001' main .  (26)
+
+	.  reduce 26
+
+
+state 9
+	main : statements_opt . EOF  (1)
+
+	EOF  shift 24
+	.  error
+
+
+state 10
+	statements_opt : statements .  (4)
+
+	.  reduce 4
+
+
+state 11
+	statements : statement_eol .  (5)
+	statements : statement_eol . statements  (6)
+
+	IF  shift 3
+	WHILE  shift 4
+	FOR  shift 5
+	ID  shift 7
+	ELSE  reduce 5
+	END  reduce 5
+	EOF  reduce 5
+
+	statements  goto 25
+	statement_eol  goto 11
+	statement  goto 12
+
+
+state 12
+	statement_eol : statement . EOL  (7)
+
+	EOL  shift 26
+	.  error
+
+
+state 13
+	expr : MINUS . value  (21)
+
+	INT  shift 14
+	ID  shift 15
+	.  error
+
+	value  goto 27
+
+
+state 14
+	value : INT .  (24)
+
+	.  reduce 24
+
+
+state 15
+	value : ID .  (25)
+
+	.  reduce 25
+
+
+state 16
+	condition : expr . EQ expr  (14)
+	condition : expr . NE expr  (15)
+	condition : expr . GE expr  (16)
+	condition : expr . GT expr  (17)
+	condition : expr . LE expr  (18)
+	condition : expr . LT expr  (19)
+	expr : expr . PLUS value  (22)
+	expr : expr . MINUS value  (23)
+
+	PLUS  shift 28
+	MINUS  shift 29
+	EQ  shift 30
+	NE  shift 31
+	GE  shift 32
+	GT  shift 33
+	LE  shift 34
+	LT  shift 35
+	.  error
+
+
+state 17
+	expr : value .  (20)
+
+	.  reduce 20
+
+
+state 18
+	statement : IF condition . THEN EOL statements_opt END  (10)
+	statement : IF condition . THEN EOL statements_opt ELSE EOL statements_opt END  (11)
+
+	THEN  shift 36
+	.  error
+
+
+state 19
+	statement : WHILE condition . DO EOL statements_opt END  (12)
+
+	DO  shift 37
+	.  error
+
+
+state 20
+	statement : FOR ID . IN expr COLUMN expr COLUMN expr DO EOL statements_opt END  (13)
+
+	IN  shift 38
+	.  error
+
+
+state 21
+	statements_opt : EOL statements_opt .  (3)
+
+	.  reduce 3
+
+
+state 22
+	statement : ID ASSIGN . expr  (8)
+
+	MINUS  shift 13
+	INT  shift 14
+	ID  shift 15
+	.  error
+
+	expr  goto 39
+	value  goto 17
+
+
+state 23
+	statement : ID CALL . value  (9)
+
+	INT  shift 14
+	ID  shift 15
+	.  error
+
+	value  goto 40
+
+
+state 24
+	main : statements_opt EOF .  (1)
+
+	.  reduce 1
+
+
+state 25
+	statements : statement_eol statements .  (6)
+
+	.  reduce 6
+
+
+state 26
+	statement_eol : statement EOL .  (7)
+
+	.  reduce 7
+
+
+state 27
+	expr : MINUS value .  (21)
+
+	.  reduce 21
+
+
+state 28
+	expr : expr PLUS . value  (22)
+
+	INT  shift 14
+	ID  shift 15
+	.  error
+
+	value  goto 41
+
+
+state 29
+	expr : expr MINUS . value  (23)
+
+	INT  shift 14
+	ID  shift 15
+	.  error
+
+	value  goto 42
+
+
+state 30
+	condition : expr EQ . expr  (14)
+
+	MINUS  shift 13
+	INT  shift 14
+	ID  shift 15
+	.  error
+
+	expr  goto 43
+	value  goto 17
+
+
+state 31
+	condition : expr NE . expr  (15)
+
+	MINUS  shift 13
+	INT  shift 14
+	ID  shift 15
+	.  error
+
+	expr  goto 44
+	value  goto 17
+
+
+state 32
+	condition : expr GE . expr  (16)
+
+	MINUS  shift 13
+	INT  shift 14
+	ID  shift 15
+	.  error
+
+	expr  goto 45
+	value  goto 17
+
+
+state 33
+	condition : expr GT . expr  (17)
+
+	MINUS  shift 13
+	INT  shift 14
+	ID  shift 15
+	.  error
+
+	expr  goto 46
+	value  goto 17
+
+
+state 34
+	condition : expr LE . expr  (18)
+
+	MINUS  shift 13
+	INT  shift 14
+	ID  shift 15
+	.  error
+
+	expr  goto 47
+	value  goto 17
+
+
+state 35
+	condition : expr LT . expr  (19)
+
+	MINUS  shift 13
+	INT  shift 14
+	ID  shift 15
+	.  error
+
+	expr  goto 48
+	value  goto 17
+
+
+state 36
+	statement : IF condition THEN . EOL statements_opt END  (10)
+	statement : IF condition THEN . EOL statements_opt ELSE EOL statements_opt END  (11)
+
+	EOL  shift 49
+	.  error
+
+
+state 37
+	statement : WHILE condition DO . EOL statements_opt END  (12)
+
+	EOL  shift 50
+	.  error
+
+
+state 38
+	statement : FOR ID IN . expr COLUMN expr COLUMN expr DO EOL statements_opt END  (13)
+
+	MINUS  shift 13
+	INT  shift 14
+	ID  shift 15
+	.  error
+
+	expr  goto 51
+	value  goto 17
+
+
+state 39
+	statement : ID ASSIGN expr .  (8)
+	expr : expr . PLUS value  (22)
+	expr : expr . MINUS value  (23)
+
+	PLUS  shift 28
+	MINUS  shift 29
+	EOL  reduce 8
+
+
+state 40
+	statement : ID CALL value .  (9)
+
+	.  reduce 9
+
+
+state 41
+	expr : expr PLUS value .  (22)
+
+	.  reduce 22
+
+
+state 42
+	expr : expr MINUS value .  (23)
+
+	.  reduce 23
+
+
+state 43
+	condition : expr EQ expr .  (14)
+	expr : expr . PLUS value  (22)
+	expr : expr . MINUS value  (23)
+
+	PLUS  shift 28
+	MINUS  shift 29
+	THEN  reduce 14
+	DO  reduce 14
+
+
+state 44
+	condition : expr NE expr .  (15)
+	expr : expr . PLUS value  (22)
+	expr : expr . MINUS value  (23)
+
+	PLUS  shift 28
+	MINUS  shift 29
+	THEN  reduce 15
+	DO  reduce 15
+
+
+state 45
+	condition : expr GE expr .  (16)
+	expr : expr . PLUS value  (22)
+	expr : expr . MINUS value  (23)
+
+	PLUS  shift 28
+	MINUS  shift 29
+	THEN  reduce 16
+	DO  reduce 16
+
+
+state 46
+	condition : expr GT expr .  (17)
+	expr : expr . PLUS value  (22)
+	expr : expr . MINUS value  (23)
+
+	PLUS  shift 28
+	MINUS  shift 29
+	THEN  reduce 17
+	DO  reduce 17
+
+
+state 47
+	condition : expr LE expr .  (18)
+	expr : expr . PLUS value  (22)
+	expr : expr . MINUS value  (23)
+
+	PLUS  shift 28
+	MINUS  shift 29
+	THEN  reduce 18
+	DO  reduce 18
+
+
+state 48
+	condition : expr LT expr .  (19)
+	expr : expr . PLUS value  (22)
+	expr : expr . MINUS value  (23)
+
+	PLUS  shift 28
+	MINUS  shift 29
+	THEN  reduce 19
+	DO  reduce 19
+
+
+state 49
+	statement : IF condition THEN EOL . statements_opt END  (10)
+	statement : IF condition THEN EOL . statements_opt ELSE EOL statements_opt END  (11)
+	statements_opt : .  (2)
+
+	IF  shift 3
+	WHILE  shift 4
+	FOR  shift 5
+	EOL  shift 6
+	ID  shift 7
+	ELSE  reduce 2
+	END  reduce 2
+
+	statements_opt  goto 52
+	statements  goto 10
+	statement_eol  goto 11
+	statement  goto 12
+
+
+state 50
+	statement : WHILE condition DO EOL . statements_opt END  (12)
+	statements_opt : .  (2)
+
+	IF  shift 3
+	WHILE  shift 4
+	FOR  shift 5
+	EOL  shift 6
+	ID  shift 7
+	END  reduce 2
+
+	statements_opt  goto 53
+	statements  goto 10
+	statement_eol  goto 11
+	statement  goto 12
+
+
+state 51
+	statement : FOR ID IN expr . COLUMN expr COLUMN expr DO EOL statements_opt END  (13)
+	expr : expr . PLUS value  (22)
+	expr : expr . MINUS value  (23)
+
+	PLUS  shift 28
+	MINUS  shift 29
+	COLUMN  shift 54
+	.  error
+
+
+state 52
+	statement : IF condition THEN EOL statements_opt . END  (10)
+	statement : IF condition THEN EOL statements_opt . ELSE EOL statements_opt END  (11)
+
+	ELSE  shift 55
+	END  shift 56
+	.  error
+
+
+state 53
+	statement : WHILE condition DO EOL statements_opt . END  (12)
+
+	END  shift 57
+	.  error
+
+
+state 54
+	statement : FOR ID IN expr COLUMN . expr COLUMN expr DO EOL statements_opt END  (13)
+
+	MINUS  shift 13
+	INT  shift 14
+	ID  shift 15
+	.  error
+
+	expr  goto 58
+	value  goto 17
+
+
+state 55
+	statement : IF condition THEN EOL statements_opt ELSE . EOL statements_opt END  (11)
+
+	EOL  shift 59
+	.  error
+
+
+state 56
+	statement : IF condition THEN EOL statements_opt END .  (10)
+
+	.  reduce 10
+
+
+state 57
+	statement : WHILE condition DO EOL statements_opt END .  (12)
+
+	.  reduce 12
+
+
+state 58
+	statement : FOR ID IN expr COLUMN expr . COLUMN expr DO EOL statements_opt END  (13)
+	expr : expr . PLUS value  (22)
+	expr : expr . MINUS value  (23)
+
+	PLUS  shift 28
+	MINUS  shift 29
+	COLUMN  shift 60
+	.  error
+
+
+state 59
+	statement : IF condition THEN EOL statements_opt ELSE EOL . statements_opt END  (11)
+	statements_opt : .  (2)
+
+	IF  shift 3
+	WHILE  shift 4
+	FOR  shift 5
+	EOL  shift 6
+	ID  shift 7
+	END  reduce 2
+
+	statements_opt  goto 61
+	statements  goto 10
+	statement_eol  goto 11
+	statement  goto 12
+
+
+state 60
+	statement : FOR ID IN expr COLUMN expr COLUMN . expr DO EOL statements_opt END  (13)
+
+	MINUS  shift 13
+	INT  shift 14
+	ID  shift 15
+	.  error
+
+	expr  goto 62
+	value  goto 17
+
+
+state 61
+	statement : IF condition THEN EOL statements_opt ELSE EOL statements_opt . END  (11)
+
+	END  shift 63
+	.  error
+
+
+state 62
+	statement : FOR ID IN expr COLUMN expr COLUMN expr . DO EOL statements_opt END  (13)
+	expr : expr . PLUS value  (22)
+	expr : expr . MINUS value  (23)
+
+	PLUS  shift 28
+	MINUS  shift 29
+	DO  shift 64
+	.  error
+
+
+state 63
+	statement : IF condition THEN EOL statements_opt ELSE EOL statements_opt END .  (11)
+
+	.  reduce 11
+
+
+state 64
+	statement : FOR ID IN expr COLUMN expr COLUMN expr DO . EOL statements_opt END  (13)
+
+	EOL  shift 65
+	.  error
+
+
+state 65
+	statement : FOR ID IN expr COLUMN expr COLUMN expr DO EOL . statements_opt END  (13)
+	statements_opt : .  (2)
+
+	IF  shift 3
+	WHILE  shift 4
+	FOR  shift 5
+	EOL  shift 6
+	ID  shift 7
+	END  reduce 2
+
+	statements_opt  goto 66
+	statements  goto 10
+	statement_eol  goto 11
+	statement  goto 12
+
+
+state 66
+	statement : FOR ID IN expr COLUMN expr COLUMN expr DO EOL statements_opt . END  (13)
+
+	END  shift 67
+	.  error
+
+
+state 67
+	statement : FOR ID IN expr COLUMN expr COLUMN expr DO EOL statements_opt END .  (13)
+
+	.  reduce 13
+
+
+26 terminals, 10 nonterminals
+27 grammar rules, 68 states
