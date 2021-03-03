@@ -1,0 +1,12 @@
+(ocamllex lexer)
+
+(ocamlyacc parser)
+
+(executable
+ (name compiler))
+
+(rule
+ (deps compiler.exe)
+ (target antscc)
+ (action
+  (copy %{deps} %{target})))

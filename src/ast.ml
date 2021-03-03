@@ -20,7 +20,7 @@ type statement =
 type program = Main of statement list
 
 (* AST display *)
-let rec string_of_atom a = match a with
+let string_of_atom a = match a with
     Const (n) -> (string_of_int n)
   | Id (s) -> s
 
