@@ -96,7 +96,7 @@ end
 
 **Other examples**
 
-See `ant` files in the `samples` directory for some other examples.
+See `.ant` files in the `samples` directory for some other examples.
 
 ## Custom assembly instruction set
 
@@ -137,14 +137,14 @@ function `<name>` should be one of the predefined external functions (*see infra
 
 **Getters :**
 
-* `call random r<dest>` : puts a random bit (either `0` or `1`) in register `<dest>`
-* `call pick r<dest>` : puts the current color in register `<dest>`
-
-**Setters :**
-
 * `call paint <value>` : paints current ant's cell with color <value>.
 * `call move <value>` : makes <value> steps in current direction.
 * `call turn <value>` : turns <value> times 90° to the left.
+
+**Setters :**
+
+* `call random r<dest>` : puts a random bit (either `0` or `1`) in register `<dest>`
+* `call pick r<dest>` : puts the current color in register `<dest>`
 
 ## Examples :
 
@@ -185,3 +185,7 @@ label end1
 label end0
   stop
 ```
+
+**Other examples**
+
+See `.s` files in the `samples` directory for some other examples.
