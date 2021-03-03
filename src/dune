@@ -7,6 +7,6 @@
 
 (rule
  (deps compiler.exe)
- (target antscc)
+ (target antcc)
  (action
   (copy %{deps} %{target})))
