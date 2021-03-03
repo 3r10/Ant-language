@@ -137,9 +137,9 @@ function `<name>` should be one of the predefined external functions (*see infra
 
 **Getters :**
 
-* `call paint <value>` : paints current ant's cell with color <value>.
-* `call move <value>` : makes <value> steps in current direction.
-* `call turn <value>` : turns <value> times 90° to the left.
+* `call paint <value>` : paints current ant's cell with color `<value>`.
+* `call move <value>` : makes `<value>` steps in current direction.
+* `call turn <value>` : turns `<value>` times 90° to the left.
 
 **Setters :**
 
@@ -151,7 +151,7 @@ function `<name>` should be one of the predefined external functions (*see infra
 **You can run the examples with :** https://3r10.github.io/Ant-language/antvm.html
 
 **Langton's ant**
-(compiled from previous code)
+*(compiled from code above)*
 
 ```
 label start
