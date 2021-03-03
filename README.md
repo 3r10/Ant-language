@@ -11,7 +11,7 @@
   * Written in *very vanilla* `javascript`.
   * Runs the custom assembly code.
 
-**Test the virtual machine at :** https://3r10.github.io/Ant-language/antvm.html
+**Test the virtual machine at :** https://3r10.github.io/Ant-language/antvm/antvm.html
 
 `Ant` language is inspired by Langton's ant :
 
@@ -148,7 +148,7 @@ function `<name>` should be one of the predefined external functions (*see infra
 
 ### Examples
 
-**You can run the examples with :** https://3r10.github.io/Ant-language/antvm.html
+**You can run the examples with :** https://3r10.github.io/Ant-language/antvm/antvm.html
 
 **Langton's ant**
 *(compiled from code above)*
