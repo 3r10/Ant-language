@@ -11,6 +11,8 @@
   * Written in *very vanilla* `javascript`.
   * Runs the custom assembly code.
 
+**Test the virtual machine at :** https://3r10.github.io/Ant-language/antvm.html
+
 `Ant` language is inspired by Langton's ant :
 
 https://en.wikipedia.org/wiki/Langton%27s_ant
@@ -117,6 +119,7 @@ immediate value `#...` or a register content `r...`.
 * `goto <name> <value>` : instruction pointer will be set to `label <name>` iff `<value>` **is 0**
 * `call <name> <value>` : calls the function `<name>` with the parameter `<value>` (if the function is a *getter*)
 * `call <name> r<dest>` : calls the function `<name>` and puts its result in register `<dest>` (if the function is a *setter*)
+* `stop` : stops the machine
 
 function `<name>` should be one of the predefined external functions (*see infra*)
 
@@ -133,3 +136,52 @@ function `<name>` should be one of the predefined external functions (*see infra
 ### External functions
 
 **Getters :**
+
+* `call random r<dest>` : puts a random bit (either `0` or `1`) in register `<dest>`
+* `call pick r<dest>` : puts the current color in register `<dest>`
+
+**Setters :**
+
+* `call paint <value>` : paints current ant's cell with color <value>.
+* `call move <value>` : makes <value> steps in current direction.
+* `call turn <value>` : turns <value> times 90° to the left.
+
+## Examples :
+
+**You can run the examples with :** https://3r10.github.io/Ant-language/antvm.html
+
+**Langton's ant**
+(compiled from previous code)
+
+```
+label start
+  set r0 #1
+  sub r0 #0 r0
+  set r1 r0
+  set r2 #1
+  set r3 r2
+  set r5 #1
+  set r6 #1
+  set r7 #30000
+  set r4 r5
+label cond0
+  test_le r8 r4 r7
+  goto end0 r8
+  call pick r9
+  set r10 r9
+  set r11 #0
+  test_eq r12 r10 r11
+  goto else1 r12
+  call turn r1
+  call paint #1
+  goto end1 #0
+label else1
+  call turn r3
+  call paint #0
+label end1
+  call move #1
+  add r4 r4 r6
+  goto cond0 #0
+label end0
+  stop
+```
