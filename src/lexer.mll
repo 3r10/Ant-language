@@ -8,30 +8,30 @@ let integer = ['0'-'9']+
 let id = ['a'-'z' 'A'-'Z' '_' ]['a'-'z' 'A'-'Z' '_' '0'-'9']*
 
 rule token = parse
-  | ['\n' ]        { EOL }
-  | "@"           { CALL }
-  | "+"            { PLUS }
-  | "-"            { MINUS }
+  | ['\n']          { EOL }
+  | "@"             { CALL }
+  | "+"             { PLUS }
+  | "-"             { MINUS }
   | "=="            { EQ }
   | "!="            { NE }
   | ">="            { GE }
-  | ">"            { GT }
+  | ">"             { GT }
   | "<="            { LE }
-  | "<"            { LT }
-  | ":="           { ASSIGN }
-  | eof            { EOF }
+  | "<"             { LT }
+  | ":="            { ASSIGN }
+  | eof             { EOF }
   | "if "           { IF }
   | " then"         { THEN }
-  | "else"         { ELSE }
+  | "else"          { ELSE }
   | "while "        { WHILE }
   | "for "          { FOR }
   | " in "          { IN }
-  | ":"            { COLUMN }
+  | ":"             { COLUMN }
   | " do"           { DO }
-  | "end"          { END }
-  | integer as lxm { INT (int_of_string lxm) }
-  | id as lxm { ID (lxm) }
-  | [' ' '\t']     { token lexbuf }     (* skip blanks *)
-  | _ as c					 {
+  | "end"           { END }
+  | integer as lxm  { INT (int_of_string lxm) }
+  | id as lxm       { ID (lxm) }
+  | [' ' '\t']      { token lexbuf }     (* skip blanks *)
+  | _ as c          {
     raise (LexerError (Printf.sprintf "unknown character '%c'" c ))
   }
