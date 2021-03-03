@@ -146,7 +146,7 @@ function `<name>` should be one of the predefined external functions (*see infra
 * `call random r<dest>` : puts a random bit (either `0` or `1`) in register `<dest>`
 * `call pick r<dest>` : puts the current color in register `<dest>`
 
-## Examples :
+### Examples
 
 **You can run the examples with :** https://3r10.github.io/Ant-language/antvm.html
 
