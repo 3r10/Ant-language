@@ -34,8 +34,19 @@ AAD6XwAA9+8AAA=="/>
 <div style="position: absolute; left: 512px; top: 0px; width: 512px;">
   <input type="button" value="Zoom out!" onClick="interpreter.zoomChange(-1);"/>
   <input type="button" value="Zoom in!" onClick="interpreter.zoomChange(1);"/>
+
   <br/><br/>
-  <input type="file" id="fileinput" />
+  <b>Examples :</b>
+  <select name="example" id="example" onChange="loadExample();">
+    <option value="null">&nbsp;</option>
+    <option value="spiral">Spiral</option>
+    <option value="langtons">Langton's ant</option>
+    <option value="brownian">Brownian motion</option>
+    <option value="turmite">Turmite</option>
+  </select>
+
+  <br/><br/>
+  <b>Load your file :</b> <input type="file" id="fileinput" />
   <br/><br/>
   <input type="button" value="Slow down!" onClick="interpreter.speedChange(-1);"/>
   <input type="button" value="Speed up!" onClick="interpreter.speedChange(1);"/>
@@ -343,6 +354,28 @@ function Interpreter() {
         this.slines.push(lines[i]);
       }
     }
+  }
+}
+
+function loadExample() {
+  assembly = "";
+  switch(document.getElementById('example').value) {
+  case "spiral":
+    assembly = "label start\n  set r0 #0\n  set r1 r0\nlabel cond0\n  set r2 #1\n  set r3 #1\n  test_eq r4 r2 r3\n  goto end0 r4\n  set r6 #1\n  set r7 #1\n  set r8 r1\n  set r5 r6\nlabel cond1\n  test_le r9 r5 r8\n  goto end1 r9\n  call pick r10\n  set r11 #1\n  set r12 r10\n  sub r11 r11 r12\n  set r10 r11\n  call paint r10\n  call move #1\n  add r5 r5 r7\n  goto cond1 #0\nlabel end1\n  call turn #1\n  set r13 r1\n  set r14 #1\n  add r13 r13 r14\n  set r1 r13\n  goto cond0 #0\nlabel end0\n  stop";
+    break;
+  case "langtons":
+    assembly = "label start\n  set r0 #1\n  sub r0 #0 r0\n  set r1 r0\n  set r2 #1\n  set r3 r2\n  set r5 #1\n  set r6 #1\n  set r7 #30000\n  set r4 r5\nlabel cond0\n  test_le r8 r4 r7\n  goto end0 r8\n  call pick r9\n  set r10 r9\n  set r11 #0\n  test_eq r12 r10 r11\n  goto else1 r12\n  call turn r1\n  call paint #1\n  goto end1 #0\nlabel else1\n  call turn r3\n  call paint #0\nlabel end1\n  call move #1\n  add r4 r4 r6\n  goto cond0 #0\nlabel end0\n  stop";
+    break;
+  case "brownian":
+    assembly = "label start\nlabel cond0\n  set r0 #1\n  set r1 #1\n  test_eq r2 r0 r1\n  goto end0 r2\n  call paint #1\n  call random r3\n  set r4 r3\n  set r5 r3\n  add r4 r4 r5\n  set r3 r4\n  call random r6\n  set r7 r3\n  set r8 r6\n  add r7 r7 r8\n  set r3 r7\n  call turn r3\n  call move #1\n  goto cond0 #0\nlabel end0\n  stop\n";
+    break;
+  case "turmite":
+    assembly = "label start\n  set r0 #1\n  set r1 r0\n  set r2 #1\n  sub r2 #0 r2\n  set r3 r2\n  set r4 #2\n  set r5 r4\n  set r6 #0\n  set r7 r6\nlabel cond0\n  set r8 #1\n  set r9 #1\n  test_eq r10 r8 r9\n  goto end0 r10\n  call pick r11\n  set r12 r7\n  set r13 #0\n  test_eq r14 r12 r13\n  goto else1 r14\n  set r15 r11\n  set r16 #0\n  test_eq r17 r15 r16\n  goto else2 r17\n  call paint #1\n  call turn r1\n  set r18 #0\n  set r7 r18\n  goto end2 #0\nlabel else2\n  call paint #1\n  call turn r3\n  set r19 #1\n  set r7 r19\nlabel end2\n  goto end1 #0\nlabel else1\n  set r20 r11\n  set r21 #0\n  test_eq r22 r20 r21\n  goto else3 r22\n  call paint #0\n  call turn r3\n  set r23 #0\n  set r7 r23\n  goto end3 #0\nlabel else3\n  call paint #0\n  call turn r1\n  set r24 #1\n  set r7 r24\nlabel end3\nlabel end1\n  call move #1\n  goto cond0 #0\nlabel end0\n  stop";
+    break;
+  }
+  if (assembly!="") {
+    interpreter.read(assembly);
+    interpreter.start();
   }
 }
 
